@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🍽️ Mon Restaurant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --rouge: #E63946;
+  --vert: #2DC653;
+  --orange: #FF6B2B;
+  --bleu: #1D3557;
+  --bleu-clair: #457B9D;
+  --jaune: #FFD166;
+  --fond: #0F1923;
+  --fond2: #1A2535;
+  --fond3: #243044;
+  --blanc: #F1FAEE;
+  --gris: #8A9BB0;
+  --border: rgba(255,255,255,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--fond);
+  color: var(--blanc);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== NAV ===== */
+.nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--fond2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  color: var(--gris);
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  position: relative;
+}
+.nav-btn .icon { font-size: 22px; transition: transform 0.2s; }
+.nav-btn.active { color: var(--blanc); }
+.nav-btn.active .icon { transform: scale(1.15); }
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: var(--orange);
+}
+.nav-btn:nth-child(2).active::before { background: var(--rouge); }
+.nav-btn:nth-child(3).active::before { background: var(--vert); }
+
+/* Badge commandes en attente */
+.badge-nav {
+  position: absolute;
+  top: 8px; right: calc(50% - 22px);
+  background: var(--rouge);
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  display: none;
+}
+.badge-nav.show { display: flex; }
+
+/* ===== PAGES ===== */
+.page { display: none; padding: 0 0 80px; min-height: 100vh; }
+.page.active { display: block; }
+
+/* ===== HEADER PAGE ===== */
+.page-header {
+  background: var(--fond2);
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.page-header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: var(--blanc);
+  line-height: 1;
+}
+.page-header p {
+  font-size: 13px;
+  color: var(--gris);
+  margin-top: 4px;
+}
+
+/* ===== PAGE 1 : PRISE DE COMMANDE ===== */
+.commande-form { padding: 20px; }
+
+.field-group { margin-bottom: 20px; }
+.field-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.table-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.table-btn {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--fond3);
+  color: var(--blanc);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.table-btn:active { transform: scale(0.93); }
+.table-btn.selected {
+  border-color: var(--orange);
+  background: rgba(255,107,43,0.2);
+  color: var(--orange);
+}
+.table-btn.occupee {
+  border-color: rgba(230,57,70,0.4);
+  background: rgba(230,57,70,0.1);
+  color: var(--rouge);
+}
+.table-btn .dot-occ {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--rouge);
+}
+
+.couverts-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.couvert-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--fond3);
+  color: var(--blanc);
+  font-size: 22px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.couvert-btn:active { transform: scale(0.9); background: var(--fond2); }
+.couvert-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--orange);
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Catégories menu */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  background: var(--fond3);
+  color: var(--gris);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.cat-tab.active {
+  border-color: var(--orange);
+  background: rgba(255,107,43,0.15);
+  color: var(--orange);
+}
+
+.plats-grid { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.plat-item {
+  background: var(--fond3);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 12px;
+}
+.plat-item:active { transform: scale(0.98); }
+.plat-nom { font-size: 15px; font-weight: 700; flex: 1; }
+.plat-cat { font-size: 11px; color: var(--gris); margin-top: 2px; }
+.plat-add {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--orange);
+  color: white;
+  font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+}
+.plat-item:active .plat-add { transform: scale(0.85); }
+
+/* Panier */
+.panier-section {
+  margin-top: 24px;
+  background: var(--fond2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.panier-header {
+  padding: 14px 18px;
+  background: var(--fond3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.panier-titre {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+.panier-count {
+  background: var(--orange);
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.panier-vide {
+  padding: 24px;
+  text-align: center;
+  color: var(--gris);
+  font-size: 14px;
+}
+.panier-items { padding: 8px 0; }
+.panier-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.panier-item:last-child { border-bottom: none; }
+.panier-item-nom { flex: 1; font-size: 14px; font-weight: 600; }
+.panier-qte-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qte-btn {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--fond3);
+  color: var(--blanc);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.1s;
+}
+.qte-btn:active { transform: scale(0.85); }
+.qte-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: var(--orange);
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Notes */
+.notes-input {
+  width: 100%;
+  background: var(--fond3);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--blanc);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.notes-input:focus { border-color: var(--orange); }
+.notes-input::placeholder { color: var(--gris); }
+
+/* Bouton envoyer */
+.btn-envoyer {
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, var(--orange), #FF4500);
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(255,107,43,0.4);
+}
+.btn-envoyer:active { transform: scale(0.97); box-shadow: none; }
+.btn-envoyer:disabled {
+  background: var(--fond3);
+  color: var(--gris);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ===== PAGE 2 : CUISINE ===== */
+.cuisine-header-info {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--fond3);
+  border-bottom: 1px solid var(--border);
+}
+.cuisine-stats { display: flex; gap: 16px; }
+.stat-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.attente { background: rgba(230,57,70,0.2); color: var(--rouge); }
+.stat-pill.pret { background: rgba(45,198,83,0.2); color: var(--vert); }
+
+.cuisine-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.commande-card {
+  background: var(--fond2);
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.3s;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity:0; transform: translateY(12px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.commande-card.pret {
+  border-color: rgba(45,198,83,0.4);
+  background: rgba(45,198,83,0.07);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--fond3);
+  border-bottom: 1px solid var(--border);
+}
+.card-table {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: var(--orange);
+  letter-spacing: 0.5px;
+}
+.card-heure {
+  font-size: 12px;
+  color: var(--gris);
+  font-weight: 600;
+}
+.card-couverts {
+  font-size: 12px;
+  color: var(--gris);
+  background: var(--fond2);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.card-notes-badge {
+  font-size: 11px;
+  background: rgba(255,209,102,0.2);
+  color: var(--jaune);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.card-plats { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.card-plat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--fond);
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  transition: all 0.3s;
+}
+.card-plat.valide {
+  border-color: rgba(45,198,83,0.3);
+  background: rgba(45,198,83,0.08);
+}
+.plat-qte-badge {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--orange);
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.card-plat.valide .plat-qte-badge { background: var(--vert); }
+.plat-nom-cuisine {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  transition: color 0.3s;
+}
+.card-plat.valide .plat-nom-cuisine {
+  color: var(--vert);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.btn-valider {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--vert);
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.btn-valider:active { transform: scale(0.9); }
+.btn-valider.fait {
+  background: transparent;
+  color: var(--vert);
+  border: 1.5px solid var(--vert);
+  opacity: 0.6;
+}
+
+.card-notes {
+  padding: 10px 16px 12px;
+  background: rgba(255,209,102,0.06);
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--jaune);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cuisine-vide {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gris);
+}
+.cuisine-vide .big { font-size: 56px; margin-bottom: 16px; }
+.cuisine-vide p { font-size: 16px; font-weight: 600; }
+
+/* Flash d'animation validation */
+@keyframes flashVert {
+  0% { background: rgba(45,198,83,0.5); }
+  100% { background: transparent; }
+}
+
+/* ===== PAGE 3 : SUIVI ===== */
+.suivi-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+.stat-card {
+  background: var(--fond2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 12px;
+  text-align: center;
+}
+.stat-card .nb {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card .lbl {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gris);
+}
+.stat-card.total .nb { color: var(--blanc); }
+.stat-card.attente .nb { color: var(--rouge); }
+.stat-card.pret .nb { color: var(--vert); }
+
+.suivi-section-titre {
+  padding: 8px 20px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gris);
+  border-top: 1px solid var(--border);
+}
+
+.suivi-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.suivi-item {
+  background: var(--fond2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+}
+.suivi-item.pret { border-color: rgba(45,198,83,0.3); }
+.suivi-table {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--orange);
+  min-width: 60px;
+}
+.suivi-plat { flex: 1; }
+.suivi-plat-nom { font-size: 14px; font-weight: 700; }
+.suivi-plat-meta { font-size: 12px; color: var(--gris); margin-top: 2px; }
+.suivi-status {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.suivi-status.attente { background: rgba(230,57,70,0.2); color: var(--rouge); }
+.suivi-status.pret { background: rgba(45,198,83,0.2); color: var(--vert); }
+
+.suivi-vide {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gris);
+  font-size: 15px;
+}
+
+.btn-reset {
+  margin: 16px;
+  width: calc(100% - 32px);
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(230,57,70,0.3);
+  background: rgba(230,57,70,0.1);
+  color: var(--rouge);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reset:active { background: rgba(230,57,70,0.25); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--fond2);
+  border: 1.5px solid var(--vert);
+  color: var(--vert);
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 800;
+  z-index: 9999;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.orange { border-color: var(--orange); color: var(--orange); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fond3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Commande envoyée !</div>
+
+<!-- ===== PAGE 1 : PRISE DE COMMANDE ===== -->
+<div class="page active" id="page-commande">
+  <div class="page-header">
+    <h1>📋 Prise de commande</h1>
+    <p>Sélectionne une table et compose la commande</p>
+  </div>
+
+  <div class="commande-form">
+
+    <!-- Table -->
+    <div class="field-group">
+      <span class="field-label">🪑 Numéro de table</span>
+      <div class="table-selector" id="table-selector"></div>
+    </div>
+
+    <!-- Couverts -->
+    <div class="field-group">
+      <span class="field-label">👥 Nombre de couverts</span>
+      <div class="couverts-row">
+        <button class="couvert-btn" onclick="changeCouverts(-1)">−</button>
+        <div class="couvert-val" id="couverts-val">2</div>
+        <button class="couvert-btn" onclick="changeCouverts(1)">+</button>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="field-group">
+      <span class="field-label">🍽️ Ajouter des plats</span>
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="plats-grid" id="plats-grid"></div>
+    </div>
+
+    <!-- Panier -->
+    <div class="panier-section">
+      <div class="panier-header">
+        <span class="panier-titre">🛒 Commande</span>
+        <span class="panier-count" id="panier-count">0 plat</span>
+      </div>
+      <div id="panier-contenu">
+        <div class="panier-vide">Aucun plat ajouté</div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="field-group" style="margin-top:20px;">
+      <span class="field-label">📝 Notes (allergies, cuisson...)</span>
+      <textarea class="notes-input" id="notes-input" rows="2" placeholder="Ex: sans gluten, steak saignant..."></textarea>
+    </div>
+
+    <!-- Bouton -->
+    <button class="btn-envoyer" id="btn-envoyer" onclick="envoyerCommande()" disabled>
+      <span>📤</span> ENVOYER EN CUISINE
+    </button>
+
+  </div>
+</div>
+
+<!-- ===== PAGE 2 : CUISINE ===== -->
+<div class="page" id="page-cuisine">
+  <div class="page-header">
+    <h1>👨‍🍳 Cuisine</h1>
+    <p>Appuie sur VALIDER quand un plat est prêt</p>
+  </div>
+  <div class="cuisine-header-info">
+    <div class="cuisine-stats">
+      <div class="stat-pill attente">🔴 <span id="count-attente">0</span> en attente</div>
+      <div class="stat-pill pret">🟢 <span id="count-pret">0</span> prêts</div>
+    </div>
+  </div>
+  <div class="cuisine-list" id="cuisine-list">
+    <div class="cuisine-vide">
+      <div class="big">🍳</div>
+      <p>Aucune commande en cours</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 3 : SUIVI ===== -->
+<div class="page" id="page-suivi">
+  <div class="page-header">
+    <h1>📊 Suivi</h1>
+    <p>Vue d'ensemble de toutes les commandes</p>
+  </div>
+
+  <div class="suivi-stats">
+    <div class="stat-card total">
+      <div class="nb" id="stat-total">0</div>
+      <div class="lbl">Total</div>
+    </div>
+    <div class="stat-card attente">
+      <div class="nb" id="stat-attente">0</div>
+      <div class="lbl">Attente</div>
+    </div>
+    <div class="stat-card pret">
+      <div class="nb" id="stat-pret">0</div>
+      <div class="lbl">Prêts</div>
+    </div>
+  </div>
+
+  <div class="suivi-section-titre">Historique des commandes</div>
+  <div class="suivi-list" id="suivi-list">
+    <div class="suivi-vide">Aucune commande pour le moment</div>
+  </div>
+
+  <button class="btn-reset" onclick="resetService()">🗑️ Vider — Nouveau service</button>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="goTo('commande', this)">
+    <span class="icon">📋</span>
+    Commande
+  </button>
+  <button class="nav-btn" onclick="goTo('cuisine', this)">
+    <span class="icon">👨‍🍳</span>
+    Cuisine
+    <span class="badge-nav" id="badge-cuisine">0</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('suivi', this)">
+    <span class="icon">📊</span>
+    Suivi
+  </button>
+</nav>
+
+<script>
+// ===== DONNÉES =====
+const MENU = {
+  "Entrées": ["Salade César","Soupe à l'oignon","Assiette charcuterie","Velouté de potiron","Tartare de saumon"],
+  "Plats":   ["Entrecôte frites","Poulet rôti","Saumon grillé","Risotto champignons","Burger maison","Pavé de bœuf sauce poivre","Magret de canard"],
+  "Desserts":["Crème brûlée","Tarte tatin","Moelleux chocolat","Tiramisu","Sorbet citron"],
+  "Boissons":["Eau plate","Eau gazeuse","Coca-Cola","Jus d'orange","Vin rouge","Vin blanc","Bière pression"]
+};
+
+const NB_TABLES = 20;
+
+let tableSelectionnee = null;
+let nbCouverts = 2;
+let catActive = Object.keys(MENU)[0];
+let panier = []; // [{nom, cat, qte}]
+let commandes = []; // [{id, table, couverts, heure, notes, plats:[{nom,qte,valide}]}]
+
+// ===== NAVIGATION =====
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+  if (page === 'cuisine') renderCuisine();
+  if (page === 'suivi') renderSuivi();
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'vert') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type === 'orange' ? 'orange' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== PAGE 1 : COMMANDE =====
+function initTableSelector() {
+  const el = document.getElementById('table-selector');
+  el.innerHTML = '';
+  for (let i = 1; i <= NB_TABLES; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'table-btn';
+    btn.textContent = i;
+    // Marquer tables occupées
+    const occupe = commandes.some(c => c.table === i && c.plats.some(p => !p.valide));
+    if (occupe) {
+      btn.classList.add('occupee');
+      const dot = document.createElement('div');
+      dot.className = 'dot-occ';
+      btn.appendChild(dot);
+    }
+    if (tableSelectionnee === i) btn.classList.add('selected');
+    btn.onclick = () => selectTable(i);
+    el.appendChild(btn);
+  }
+}
+
+function selectTable(n) {
+  tableSelectionnee = n;
+  initTableSelector();
+  updateBtnEnvoyer();
+}
+
+function changeCouverts(d) {
+  nbCouverts = Math.max(1, Math.min(20, nbCouverts + d));
+  document.getElementById('couverts-val').textContent = nbCouverts;
+}
+
+function initCatTabs() {
+  const el = document.getElementById('cat-tabs');
+  el.innerHTML = '';
+  Object.keys(MENU).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (cat === catActive ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { catActive = cat; initCatTabs(); renderPlats(); };
+    el.appendChild(btn);
+  });
+}
+
+function renderPlats() {
+  const el = document.getElementById('plats-grid');
+  el.innerHTML = '';
+  MENU[catActive].forEach(plat => {
+    const item = document.createElement('div');
+    item.className = 'plat-item';
+    item.innerHTML = `
+      <div>
+        <div class="plat-nom">${plat}</div>
+        <div class="plat-cat">${catActive}</div>
+      </div>
+      <div class="plat-add">+</div>
+    `;
+    item.onclick = () => ajouterAuPanier(plat, catActive);
+    el.appendChild(item);
+  });
+}
+
+function ajouterAuPanier(nom, cat) {
+  const existant = panier.find(p => p.nom === nom);
+  if (existant) {
+    existant.qte++;
+  } else {
+    panier.push({ nom, cat, qte: 1 });
+  }
+  renderPanier();
+  updateBtnEnvoyer();
+  showToast('+ ' + nom, 'orange');
+}
+
+function renderPanier() {
+  const el = document.getElementById('panier-contenu');
+  const total = panier.reduce((s, p) => s + p.qte, 0);
+  document.getElementById('panier-count').textContent = total + ' plat' + (total > 1 ? 's' : '');
+
+  if (panier.length === 0) {
+    el.innerHTML = '<div class="panier-vide">Aucun plat ajouté</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="panier-items">' + panier.map((p, i) => `
+    <div class="panier-item">
+      <div class="panier-item-nom">${p.nom}</div>
+      <div class="panier-qte-ctrl">
+        <button class="qte-btn" onclick="changeQte(${i}, -1)">−</button>
+        <div class="qte-val">${p.qte}</div>
+        <button class="qte-btn" onclick="changeQte(${i}, 1)">+</button>
+      </div>
+    </div>
+  `).join('') + '</div>';
+}
+
+function changeQte(idx, d) {
+  panier[idx].qte += d;
+  if (panier[idx].qte <= 0) panier.splice(idx, 1);
+  renderPanier();
+  updateBtnEnvoyer();
+}
+
+function updateBtnEnvoyer() {
+  const btn = document.getElementById('btn-envoyer');
+  btn.disabled = !tableSelectionnee || panier.length === 0;
+}
+
+function envoyerCommande() {
+  if (!tableSelectionnee || panier.length === 0) return;
+
+  const heure = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  const notes = document.getElementById('notes-input').value.trim();
+
+  const commande = {
+    id: Date.now(),
+    table: tableSelectionnee,
+    couverts: nbCouverts,
+    heure,
+    notes,
+    plats: panier.map(p => ({ nom: p.nom, cat: p.cat, qte: p.qte, valide: false }))
+  };
+
+  commandes.push(commande);
+
+  // Reset formulaire
+  panier = [];
+  tableSelectionnee = null;
+  nbCouverts = 2;
+  document.getElementById('notes-input').value = '';
+  document.getElementById('couverts-val').textContent = '2';
+
+  renderPanier();
+  updateBtnEnvoyer();
+  initTableSelector();
+  updateBadgeCuisine();
+
+  showToast('✅ Envoyé en cuisine !');
+}
+
+// ===== PAGE 2 : CUISINE =====
+function renderCuisine() {
+  const el = document.getElementById('cuisine-list');
+  const commandesActives = commandes.filter(c => c.plats.some(p => !p.valide));
+  const commandesPrets = commandes.filter(c => c.plats.every(p => p.valide) && c.plats.length > 0);
+
+  let totalAttente = 0, totalPret = 0;
+  commandes.forEach(c => {
+    c.plats.forEach(p => {
+      if (p.valide) totalPret++; else totalAttente++;
+    });
+  });
+  document.getElementById('count-attente').textContent = totalAttente;
+  document.getElementById('count-pret').textContent = totalPret;
+
+  if (commandes.length === 0) {
+    el.innerHTML = `<div class="cuisine-vide"><div class="big">🍳</div><p>Aucune commande en cours</p></div>`;
+    return;
+  }
+
+  el.innerHTML = '';
+
+  // Commandes en attente d'abord
+  [...commandesActives, ...commandesPrets].forEach(commande => {
+    const toutValide = commande.plats.every(p => p.valide);
+    const card = document.createElement('div');
+    card.className = 'commande-card' + (toutValide ? ' pret' : '');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-table">TABLE ${commande.table}</div>
+        <div class="card-heure">${commande.heure}</div>
+        <div class="card-couverts">${commande.couverts} couv.</div>
+        ${commande.notes ? `<div class="card-notes-badge">📝 note</div>` : ''}
+      </div>
+      <div class="card-plats">
+        ${commande.plats.map((plat, pi) => `
+          <div class="card-plat ${plat.valide ? 'valide' : ''}" id="plat-${commande.id}-${pi}">
+            <div class="plat-qte-badge">${plat.qte}</div>
+            <div class="plat-nom-cuisine">${plat.nom}</div>
+            ${!plat.valide
+              ? `<button class="btn-valider" onclick="validerPlat(${commande.id}, ${pi})">VALIDER</button>`
+              : `<button class="btn-valider fait" disabled>✓ PRÊT</button>`
+            }
+          </div>
+        `).join('')}
+      </div>
+      ${commande.notes ? `<div class="card-notes">📝 ${commande.notes}</div>` : ''}
+    `;
+
+    el.appendChild(card);
+  });
+}
+
+function validerPlat(commandeId, platIdx) {
+  const commande = commandes.find(c => c.id === commandeId);
+  if (!commande) return;
+  commande.plats[platIdx].valide = true;
+  renderCuisine();
+  updateBadgeCuisine();
+  showToast('✅ ' + commande.plats[platIdx].nom + ' — PRÊT !');
+}
+
+function updateBadgeCuisine() {
+  const badge = document.getElementById('badge-cuisine');
+  const nb = commandes.reduce((s, c) => s + c.plats.filter(p => !p.valide).length, 0);
+  badge.textContent = nb;
+  badge.classList.toggle('show', nb > 0);
+}
+
+// ===== PAGE 3 : SUIVI =====
+function renderSuivi() {
+  const total = commandes.reduce((s, c) => s + c.plats.length, 0);
+  const pret  = commandes.reduce((s, c) => s + c.plats.filter(p => p.valide).length, 0);
+  const att   = total - pret;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-attente').textContent = att;
+  document.getElementById('stat-pret').textContent = pret;
+
+  const el = document.getElementById('suivi-list');
+  if (commandes.length === 0) {
+    el.innerHTML = '<div class="suivi-vide">Aucune commande pour le moment</div>';
+    return;
+  }
+
+  el.innerHTML = '';
+  // Du plus récent au plus ancien
+  [...commandes].reverse().forEach(commande => {
+    commande.plats.forEach(plat => {
+      const item = document.createElement('div');
+      item.className = 'suivi-item' + (plat.valide ? ' pret' : '');
+      item.innerHTML = `
+        <div class="suivi-table">T.${commande.table}</div>
+        <div class="suivi-plat">
+          <div class="suivi-plat-nom">${plat.nom}</div>
+          <div class="suivi-plat-meta">${commande.heure} · ${commande.couverts} couv. · ×${plat.qte}${commande.notes ? ' · 📝 ' + commande.notes : ''}</div>
+        </div>
+        <div class="suivi-status ${plat.valide ? 'pret' : 'attente'}">${plat.valide ? '✅ PRÊT' : '⏳ ATTENTE'}</div>
+      `;
+      el.appendChild(item);
+    });
+  });
+}
+
+function resetService() {
+  if (!confirm('Vider toutes les commandes et démarrer un nouveau service ?')) return;
+  commandes = [];
+  panier = [];
+  tableSelectionnee = null;
+  renderPanier();
+  updateBtnEnvoyer();
+  initTableSelector();
+  updateBadgeCuisine();
+  renderSuivi();
+  showToast('🔄 Nouveau service démarré');
+}
+
+// ===== INIT =====
+initTableSelector();
+initCatTabs();
+renderPlats();
+</script>
+</body>
+</html>
